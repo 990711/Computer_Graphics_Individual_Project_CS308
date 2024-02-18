@@ -16,6 +16,8 @@ constexpr float PI = 3.14159265358979323846;
 
 float vertices[][3] = { {0,2.5,0},{2,2.5,0},{2,2.5,0.2},{0,2.5,0.2},{0,0,0},{2,0,0},{2,0,0.2},{0,0,0.2} };
 
+GLfloat backWallRotation = 0.0;
+
 
 void drawGrid() {
 	GLfloat step = 1.0f;
@@ -66,12 +68,12 @@ void setLighting() {
 	//glEnable(GL_LIGHT0);
 
 	// Set lighting intensity and color
-	GLfloat qaAmbientLight[] = { 0.2, 0.2, 0.2, 1.0 };
-	GLfloat qaDiffuseLight[] = { 0.8, 0.8, 0.8, 1.0 };
+	GLfloat qaAmbientLight[] = { 0.5, 0.5, 0.5, 1.0 };
+	GLfloat qaDiffuseLight[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat qaSpecularLight[] = { 1.0, 1.0, 1.0, 1.0 };
 	glLightfv(GL_LIGHT0, GL_AMBIENT, qaAmbientLight);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, qaDiffuseLight);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, qaSpecularLight);
+	//glLightfv(GL_LIGHT0, GL_SPECULAR, qaSpecularLight);
 
 	// Set the light position
 	GLfloat qaLightPosition[] = { 5.0, 1.0, 5, 1.0 };
@@ -185,13 +187,101 @@ void drawSeatSet() {
 
 }
 
+void drawCylinder(float radius, float height) {
+	double angle = 0;
+
+
+	glColor3f(1.0, 1.0, 1.0);
+
+	glBegin(GL_QUAD_STRIP);
+
+	while (angle < 360) {
+
+		double x = radius * cos(angle);
+		double y = 0;
+		double z = radius * sin(angle);
+
+		glVertex3f(x, y, z);
+		glVertex3f(x, y + height, z);
+
+		angle += 1;
+
+	}
+
+	glEnd();
+
+}
+
+void drawBody() {
+	glPushMatrix();
+	glTranslatef(-2, 0, -40);
+	glRotatef(90,1,0,0);
+	drawCylinder(12, 50);
+	glPopMatrix();
+}
+
+void drawMainCarpet() {
+	glPushMatrix();
+	glTranslatef(-2, -1.5, -10);
+	glScalef(14,0.1,27);
+	glutSolidCube(1.5);
+	glPopMatrix();
+}
+
+void drawMiddleCarpet() {
+	glPushMatrix();
+	glTranslatef(-2, -1.4, -10);
+	glScalef(2, 0.1, 27);
+	glutSolidCube(1.5);
+	glPopMatrix();
+}
+
+void drawBackWall_Door() {
+	glPushMatrix();
+	glRotatef(-90, 1, 0, 0);
+	glTranslatef(-2, 25, 0);
+	glScalef(2, 0.2, 7);
+	glRotatef(backWallRotation, 0, 0, 1);
+	glutSolidCube(1.5);
+	glPopMatrix();
+}
+
+void drawBackWall() {
+	glPushMatrix();
+	glRotatef(-90, 1, 0, 0);
+	glTranslatef(-7.2, 25, 0);
+	glScalef(5, 0.2, 10);
+	glutSolidCube(1.5);
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(-90, 1, 0, 0);
+	glTranslatef(3.2, 25, 0);
+	glScalef(5, 0.2, 10);
+	glutSolidCube(1.5);
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(-90, 1, 0, 0);
+	glTranslatef(-2, 25, 6.4);
+	glScalef(2, 0.2, 1.5);
+	glutSolidCube(1.5);
+	glPopMatrix();
+}
+
 void drawScene() {
 	drawSeatSet();
+	drawBody();
+	drawMainCarpet();
+	drawMiddleCarpet();
+	drawBackWall_Door();
+	drawBackWall();
 }
 
 void drawSceneWithLighting() {
 	// Set material properties
 	GLfloat qaBlack[] = { 0.0, 0.0, 0.0, 1.0 };
+	GLfloat qaGray[] = { 0.5, 0.5, 0.5, 1.0 };
 	GLfloat qaGreen[] = { 0.0, 1.0, 0.0, 1.0 };
 	GLfloat qaRed[] = { 1.0, 0.0, 0.0, 1.0 };
 	GLfloat qaBrown[] = { 0.75, 0.59, 0.36, 1.0 };
@@ -214,26 +304,67 @@ void drawSceneWithLighting() {
 
 		glShadeModel(GL_SMOOTH);
 
+		glPushMatrix();
+
+		glMaterialfv(GL_FRONT, GL_AMBIENT, qaGray);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, qaGray);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, qaWhite);
+		glMaterialf(GL_FRONT, GL_SHININESS, 20.0);
+
+		drawBackWall();
+		glPopMatrix();
+
+		glPushMatrix();
+
+		glMaterialfv(GL_FRONT, GL_AMBIENT, qaBlue);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, qaBlue);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, qaWhite);
+		glMaterialf(GL_FRONT, GL_SHININESS, 20.0);
+
+		drawMiddleCarpet();
+		glPopMatrix();
+
+		glPushMatrix();
+
+		glMaterialfv(GL_FRONT, GL_AMBIENT, qaBrown);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, qaBrown);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, qaWhite);
+		glMaterialf(GL_FRONT, GL_SHININESS, 20.0);
+
+		drawMainCarpet();
+		glPopMatrix();
+
+		glPushMatrix();
+
+		glMaterialfv(GL_FRONT, GL_AMBIENT, qaWhite);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, qaWhite);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, qaWhite);
+		glMaterialf(GL_FRONT, GL_SHININESS, 20.0);
+
+		drawBackWall_Door();
+		glPopMatrix();
+
+		glPushMatrix();
+
+		glMaterialfv(GL_FRONT, GL_AMBIENT, qaWhite);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, qaWhite);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, qaWhite);
+		glMaterialf(GL_FRONT, GL_SHININESS, 20.0);
+
+		drawBody();
+		glPopMatrix();
+
+		glPushMatrix();
 		//Set, ambient, diffuse and specular lighting. Set ambient to 20%.
 		glMaterialfv(GL_FRONT, GL_AMBIENT, qaLightBlue);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, qaLightBlue);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, qaWhite);
 		glMaterialf(GL_FRONT, GL_SHININESS, 20.0);
-		//glLightfv(GL_LIGHT0, GL_AMBIENT, qaLowAmbient);
-
-		// Draw a sphere
-
-		/*glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		glPushMatrix();
-		glTranslatef(-2 + (float)iIndex * 8, 0.5, -2.0);
-		drawPyramid();
-		glPopMatrix();*/
-
-		glPushMatrix();
-		//glScalef(2, 2, 2);
-		drawScene();
+		
+		drawSeatSet();
 		glPopMatrix();
+
+		
 
 	//}
 }
@@ -326,6 +457,12 @@ void keyboard(unsigned char key, int x, int y) {
 
 	if (key == 'f')
 		glDisable(GL_LIGHT0);
+
+	if (key == 'b')
+		backWallRotation += 1;
+
+	if (key == 'B')
+		backWallRotation -= 1;
 
 	glutPostRedisplay();
 }
